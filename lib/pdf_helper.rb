@@ -23,7 +23,7 @@ module PdfHelper
 
   private
     def make_pdf(options = {})
-      html_string = render_to_string(:template => options[:template], :layout => options[:layout])
+      html_string = externals_to_absolute_path(render_to_string(:template => options[:template], :layout => options[:layout]))
       w = WickedPdf.new(options[:wkhtmltopdf])
       w.pdf_from_string(html_string, parse_options(options))
     end
@@ -50,6 +50,10 @@ module PdfHelper
 
     def make_options opts, names, prefix="", type=:string
       names.collect {|o| make_option("#{prefix.blank? ? "" : prefix + "-"}#{o.to_s}", opts[o], type) unless opts[o].blank?}.join
+    end
+    
+    def externals_to_absolute_path(html) 
+      html.gsub(/(src|href)="\//) { |s| "#{$1}=\"http://#{request.host_with_port}/" }
     end
 
     def parse_header_footer opts
